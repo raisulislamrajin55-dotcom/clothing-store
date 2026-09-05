@@ -20,7 +20,7 @@
     try {
       const res = await fetch(`${API_BASE}/products`);
       const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+  !data.success) throw new Error(data.message);
       products = data.products;
       renderProducts();
     } catch (err) {
@@ -30,7 +30,7 @@
   }
 
   function renderProducts() {
-    if (products.length === 0) {
+products.length === 0) {
       productGrid.innerHTML = `<div class="empty-placeholder">No products available yet. Check back soon!</div>`;
       return;
     }
@@ -76,7 +76,7 @@
   // ---------- Modal open/close ----------
   function openOrderModal(productId) {
     selectedProduct = products.find((p) => p.id === productId);
-    if (!selectedProduct) return;
+!selectedProduct) return;
 
     clientRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -113,10 +113,10 @@
   document.getElementById("closeModalBtn").addEventListener("click", closeModal);
   document.getElementById("closeConfirmBtn").addEventListener("click", closeModal);
   modalOverlay.addEventListener("click", (e) => {
-    if (e.target === modalOverlay) closeModal();
+e.target === modalOverlay) closeModal();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
+e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
   });
 
   // ---------- Quantity selector ----------
@@ -133,13 +133,13 @@
   });
 
   // ---------- Payment method toggle ----------
-  const mfsNumbers = { bkash: "01700-000000", nagad: "01800-000000" };
+
   document.querySelectorAll('input[name="paymentMethod"]').forEach((radio) => {
     radio.addEventListener("change", (e) => {
       const method = e.target.value;
       const mfsDetails = document.getElementById("mfsDetails");
       const txnInput = document.getElementById("transactionId");
-      if (method === "bkash" || method === "nagad") {
+  method === "bkash" || method === "nagad") {
         mfsDetails.style.display = "block";
         document.getElementById("mfsNumber").textContent = mfsNumbers[method];
         document.getElementById("mfsMethodName").textContent = method === "bkash" ? "bKash" : "Nagad";
@@ -154,7 +154,7 @@
 
   // ---------- Price calculation ----------
   function updatePriceSummary() {
-    if (!selectedProduct) return;
+!selectedProduct) return;
     const qty = Number(qtyInput.value) || 1;
     const productTotal = selectedProduct.price * qty;
     const total = productTotal + DELIVERY_CHARGE;
@@ -173,12 +173,12 @@
     document.getElementById("txnError").textContent = "";
     document.getElementById("formError").textContent = "";
 
-    if (!BD_PHONE_REGEX.test(formData.phone.trim())) {
+!BD_PHONE_REGEX.test(formData.phone.trim())) {
       document.getElementById("phoneError").textContent = "Enter a valid Bangladeshi number, e.g. 017XXXXXXXX";
       valid = false;
     }
 
-    if (
+
       (formData.paymentMethod === "bkash" || formData.paymentMethod === "nagad") &&
       (!formData.transactionId || formData.transactionId.trim().length < 6)
     ) {
@@ -186,7 +186,7 @@
       valid = false;
     }
 
-    if (!formData.customerName.trim() || !formData.address.trim()) {
+!formData.customerName.trim() || !formData.address.trim()) {
       document.getElementById("formError").textContent = "Please fill in all required fields.";
       valid = false;
     }
@@ -197,7 +197,7 @@
   // ---------- Submit order ----------
   orderForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // duplicate-click guard
+isSubmitting) return; // duplicate-click guard
 
     const formData = {
       customerName: document.getElementById("customerName").value,
@@ -213,7 +213,7 @@
       clientRequestId,
     };
 
-    if (!validateForm(formData)) return;
+!validateForm(formData)) return;
 
     const placeOrderBtn = document.getElementById("placeOrderBtn");
     isSubmitting = true;
@@ -228,7 +228,7 @@
       });
       const data = await res.json();
 
-      if (!data.success) {
+  !data.success) {
         document.getElementById("formError").textContent = data.message || "Something went wrong. Please try again.";
         isSubmitting = false;
         placeOrderBtn.disabled = false;

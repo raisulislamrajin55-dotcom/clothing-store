@@ -42,7 +42,7 @@ function validateOrderPayload(body) {
     errors.push("Please select a valid payment method.");
   }
 
-  if (body.paymentMethod === "bkash" || body.paymentMethod === "nagad") {
+
     if (!isNonEmptyString(body.transactionId)) {
       errors.push("Transaction ID is required for bKash/Nagad payments.");
     } else if (body.transactionId.trim().length < 6) {
