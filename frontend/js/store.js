@@ -20,7 +20,7 @@
     try {
       const res = await fetch(`${API_BASE}/products`);
       const data = await res.json();
-  !data.success) throw new Error(data.message);
+      if (!data.success) throw new Error(data.message);
       products = data.products;
       renderProducts();
     } catch (err) {
@@ -30,7 +30,7 @@
   }
 
   function renderProducts() {
-products.length === 0) {
+    if (products.length === 0) {
       productGrid.innerHTML = `<div class="empty-placeholder">No products available yet. Check back soon!</div>`;
       return;
     }
@@ -76,7 +76,7 @@ products.length === 0) {
   // ---------- Modal open/close ----------
   function openOrderModal(productId) {
     selectedProduct = products.find((p) => p.id === productId);
-!selectedProduct) return;
+    if (!selectedProduct) return;
 
     clientRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -92,10 +92,8 @@ products.length === 0) {
 
     orderForm.reset();
     document.getElementById("qtyInput").value = 1;
-    document.getElementById("mfsDetails").style.display = "none";
     document.getElementById("formError").textContent = "";
     document.getElementById("phoneError").textContent = "";
-    document.getElementById("txnError").textContent = "";
 
     orderFormView.style.display = "block";
     orderConfirmView.style.display = "none";
@@ -113,10 +111,10 @@ products.length === 0) {
   document.getElementById("closeModalBtn").addEventListener("click", closeModal);
   document.getElementById("closeConfirmBtn").addEventListener("click", closeModal);
   modalOverlay.addEventListener("click", (e) => {
-e.target === modalOverlay) closeModal();
+    if (e.target === modalOverlay) closeModal();
   });
   document.addEventListener("keydown", (e) => {
-e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
+    if (e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
   });
 
   // ---------- Quantity selector ----------
@@ -132,29 +130,9 @@ e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
     updatePriceSummary();
   });
 
-  // ---------- Payment method toggle ----------
-
-  document.querySelectorAll('input[name="paymentMethod"]').forEach((radio) => {
-    radio.addEventListener("change", (e) => {
-      const method = e.target.value;
-      const mfsDetails = document.getElementById("mfsDetails");
-      const txnInput = document.getElementById("transactionId");
-  method === "bkash" || method === "nagad") {
-        mfsDetails.style.display = "block";
-        document.getElementById("mfsNumber").textContent = mfsNumbers[method];
-        document.getElementById("mfsMethodName").textContent = method === "bkash" ? "bKash" : "Nagad";
-        txnInput.setAttribute("required", "required");
-      } else {
-        mfsDetails.style.display = "none";
-        txnInput.removeAttribute("required");
-        document.getElementById("txnError").textContent = "";
-      }
-    });
-  });
-
   // ---------- Price calculation ----------
   function updatePriceSummary() {
-!selectedProduct) return;
+    if (!selectedProduct) return;
     const qty = Number(qtyInput.value) || 1;
     const productTotal = selectedProduct.price * qty;
     const total = productTotal + DELIVERY_CHARGE;
@@ -170,23 +148,14 @@ e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
   function validateForm(formData) {
     let valid = true;
     document.getElementById("phoneError").textContent = "";
-    document.getElementById("txnError").textContent = "";
     document.getElementById("formError").textContent = "";
 
-!BD_PHONE_REGEX.test(formData.phone.trim())) {
+    if (!BD_PHONE_REGEX.test(formData.phone.trim())) {
       document.getElementById("phoneError").textContent = "Enter a valid Bangladeshi number, e.g. 017XXXXXXXX";
       valid = false;
     }
 
-
-      (formData.paymentMethod === "bkash" || formData.paymentMethod === "nagad") &&
-      (!formData.transactionId || formData.transactionId.trim().length < 6)
-    ) {
-      document.getElementById("txnError").textContent = "Please enter a valid Transaction ID.";
-      valid = false;
-    }
-
-!formData.customerName.trim() || !formData.address.trim()) {
+    if (!formData.customerName.trim() || !formData.address.trim()) {
       document.getElementById("formError").textContent = "Please fill in all required fields.";
       valid = false;
     }
@@ -197,7 +166,7 @@ e.key === "Escape" && modalOverlay.classList.contains("active")) closeModal();
   // ---------- Submit order ----------
   orderForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-isSubmitting) return; // duplicate-click guard
+    if (isSubmitting) return; // duplicate-click guard
 
     const formData = {
       customerName: document.getElementById("customerName").value,
@@ -207,13 +176,13 @@ isSubmitting) return; // duplicate-click guard
       quantity: Number(qtyInput.value),
       size: document.getElementById("sizeSelect").value,
       paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
-      transactionId: document.getElementById("transactionId").value,
+      transactionId: "",
       customerNote: document.getElementById("customerNote").value,
       deliveryCharge: DELIVERY_CHARGE,
       clientRequestId,
     };
 
-!validateForm(formData)) return;
+    if (!validateForm(formData)) return;
 
     const placeOrderBtn = document.getElementById("placeOrderBtn");
     isSubmitting = true;
@@ -228,7 +197,7 @@ isSubmitting) return; // duplicate-click guard
       });
       const data = await res.json();
 
-  !data.success) {
+      if (!data.success) {
         document.getElementById("formError").textContent = data.message || "Something went wrong. Please try again.";
         isSubmitting = false;
         placeOrderBtn.disabled = false;
