@@ -1,0 +1,62 @@
+[
+  {
+    "id": "P001",
+    "name": "Premium Cotton Panjabi",
+    "price": 1450,
+    "image": "https://images.unsplash.com/photo-1622470953794-aa9c70b0fb9d?w=600&q=80",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "description": "Soft breathable cotton panjabi with elegant embroidery. Perfect for Eid and Friday prayers.",
+    "category": "Panjabi",
+    "inStock": true
+  },
+  {
+    "id": "P002",
+    "name": "Georgette Party Saree",
+    "price": 2200,
+    "image": "https://images.unsplash.com/photo-1610030181087-540c3d05e4a2?w=600&q=80",
+    "sizes": ["S", "M", "L"],
+    "description": "Lightweight georgette saree with hand-finished border, ideal for parties and festivals.",
+    "category": "Saree",
+    "inStock": true
+  },
+  {
+    "id": "P003",
+    "name": "Slim Fit Formal Shirt",
+    "price": 950,
+    "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&q=80",
+    "sizes": ["S", "M", "L", "XL"],
+    "description": "Wrinkle-resistant formal shirt tailored for a sharp slim fit. Office and casual wear.",
+    "category": "Shirt",
+    "inStock": true
+  },
+  {
+    "id": "P004",
+    "name": "Unstitched Three-Piece",
+    "price": 1850,
+    "image": "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=600&q=80",
+    "sizes": ["S", "M", "L", "XL"],
+    "description": "Premium unstitched lawn three-piece with printed dupatta. Trending this season.",
+    "category": "Three-Piece",
+    "inStock": true
+  },
+  {
+    "id": "P005",
+    "name": "Denim Jacket",
+    "price": 1650,
+    "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&q=80",
+    "sizes": ["M", "L", "XL", "XXL"],
+    "description": "Classic washed denim jacket, a wardrobe staple for chilly evenings.",
+    "category": "Jacket",
+    "inStock": false
+  },
+  {
+    "id": "P006",
+    "name": "Silk Blend Kurti",
+    "price": 1200,
+    "image": "https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=600&q=80",
+    "sizes": ["S", "M", "L", "XL"],
+    "description": "Elegant silk-blend kurti with delicate print, comfortable for all-day wear.",
+    "category": "Kurti",
+    "inStock": true
+  }
+]

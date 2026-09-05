@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard — Aranya Fashion House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ===== Login Screen ===== -->
+  <div id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card">
+      <h1>Admin Login</h1>
+      <p class="login-sub">Aranya Fashion House — Order Management</p>
+      <div class="form-row">
+        <label for="username">Username</label>
+        <input type="text" id="username" required autocomplete="username" />
+      </div>
+      <div class="form-row">
+        <label for="password">Password</label>
+        <input type="password" id="password" required autocomplete="current-password" />
+      </div>
+      <p class="login-error" id="loginError"></p>
+      <button type="submit" class="btn btn-primary btn-block">Log In</button>
+    </form>
+  </div>
+
+  <!-- ===== Dashboard ===== -->
+  <div id="dashboard" class="dashboard" style="display:none;">
+    <aside class="sidebar">
+      <div class="sidebar-brand">Aranya <em>Admin</em></div>
+      <nav>
+        <button class="nav-item active" data-tab="orders">📦 Orders</button>
+        <button class="nav-item" data-tab="products">👗 Products</button>
+      </nav>
+      <button class="logout-btn" id="logoutBtn">Log Out</button>
+    </aside>
+
+    <main class="main-content">
+      <!-- ===== Orders Tab ===== -->
+      <section id="ordersTab" class="tab-panel active">
+        <div class="panel-header">
+          <h2>Orders</h2>
+          <div class="panel-controls">
+            <input type="search" id="orderSearch" placeholder="Search by name, phone, order ID..." />
+            <select id="statusFilter">
+              <option value="All">All Statuses</option>
+              <option>Pending</option>
+              <option>Confirmed</option>
+              <option>Processing</option>
+              <option>Shipped</option>
+              <option>Delivered</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Product</th>
+                <th>Qty/Size</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="9" class="empty-row">Loading orders…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== Products Tab ===== -->
+      <section id="productsTab" class="tab-panel">
+        <div class="panel-header">
+          <h2>Products</h2>
+          <button class="btn btn-primary" id="addProductBtn">+ Add Product</button>
+        </div>
+
+        <div class="products-admin-grid" id="productsAdminGrid">
+          <p class="empty-row">Loading products…</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== Order Detail Modal ===== -->
+  <div class="modal-overlay" id="orderDetailModal">
+    <div class="modal">
+      <button class="modal-close" id="closeOrderDetail">&times;</button>
+      <div class="modal-body" id="orderDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== Product Form Modal ===== -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <button class="modal-close" id="closeProductModal">&times;</button>
+      <div class="modal-body">
+        <h2 id="productModalTitle">Add Product</h2>
+        <form id="productForm">
+          <input type="hidden" id="productIdField" />
+          <div class="form-row">
+            <label for="prodName">Product Name *</label>
+            <input type="text" id="prodName" required />
+          </div>
+          <div class="form-row">
+            <label for="prodCategory">Category</label>
+            <input type="text" id="prodCategory" placeholder="e.g. Saree, Panjabi" />
+          </div>
+          <div class="form-row">
+            <label for="prodPrice">Price (৳) *</label>
+            <input type="number" id="prodPrice" min="0" required />
+          </div>
+          <div class="form-row">
+            <label for="prodImage">Image URL *</label>
+            <input type="text" id="prodImage" placeholder="https://..." required />
+          </div>
+          <div class="form-row">
+            <label for="prodSizes">Available Sizes * (comma-separated)</label>
+            <input type="text" id="prodSizes" placeholder="S, M, L, XL, XXL" required />
+          </div>
+          <div class="form-row">
+            <label for="prodDescription">Short Description</label>
+            <textarea id="prodDescription" rows="2"></textarea>
+          </div>
+          <div class="form-row checkbox-row">
+            <label><input type="checkbox" id="prodInStock" checked /> In Stock</label>
+          </div>
+          <p class="form-error" id="productFormError"></p>
+          <button type="submit" class="btn btn-primary btn-block">Save Product</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
