@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DIVA Wardrobe — ELEGANCE IN EVERY OCCASION, Delivered</title>
+<meta name="description" content="saree and more — order online with home delivery across Bangladesh." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">ড</span>
+        <span class="brand-text">DIVA <em>Wardrobe</em></span>
+      </a>
+      <nav class="site-nav">
+        <a href="#collection">Collection</a>
+        <a href="#how-it-works">How to Order</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a href="#collection" class="btn btn-outline nav-cta">Shop Now</a>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="eyebrow">New Season Arrivals</p>
+      <h1>Timeless Style,<br />Delivered to Your Door</h1>
+      <p class="hero-sub">Handpicked panjabi, saree, kurti &amp; formal wear — crafted for elegance, priced for everyone. Cash on delivery available across Bangladesh.</p>
+      <a href="#collection" class="btn btn-primary">Explore Collection</a>
+    </div>
+  </section>
+
+  <!-- ===== Product Grid ===== -->
+  <main class="container" id="collection">
+    <div class="section-heading">
+      <h2>Our Collection</h2>
+      <p>Every piece, quality-checked and ready to ship.</p>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+      <!-- Product cards are injected here by js/store.js -->
+      <div class="loading-placeholder">Loading products…</div>
+    </div>
+  </main>
+
+  <!-- ===== How it works ===== -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-heading">
+        <h2>How to Order</h2>
+        <p>Three simple steps, no account needed.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <h3>Pick Your Item</h3>
+          <p>Choose a product and click "Order Now".</p>
+        </div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <h3>Fill the Form</h3>
+          <p>Enter your details, size and preferred payment method.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <h3>We Deliver</h3>
+          <p>Sit back — your order arrives at your doorstep.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer" id="contact">
+    <div class="container footer-inner">
+      <div>
+        <span class="brand-text">DIVA <em>Wardrobe</em></span>
+        <p>Dhaka, Bangladesh · Open daily 24 hours </p>
+      </div>
+      <div class="footer-contact">
+        <p>📞 +880 1XXX-XXXXXX</p>
+      </div>
+    </div>
+    <p class="copyright">© <span id="year"></span> DIVA Wardrobe. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== Order Modal ===== -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="closeModalBtn" aria-label="Close">&times;</button>
+
+      <!-- Step 1: Order Form -->
+      <div class="modal-body" id="orderFormView">
+        <h2 id="modalTitle">Complete Your Order</h2>
+
+        <div class="order-product-preview">
+          <img id="opImage" src="" alt="" />
+          <div>
+            <h3 id="opName"></h3>
+            <p class="op-price">৳<span id="opPrice"></span> <span class="per-unit">/ unit</span></p>
+          </div>
+        </div>
+
+        <form id="orderForm" novalidate>
+          <div class="form-row">
+            <label for="customerName">Full Name *</label>
+            <input type="text" id="customerName" name="customerName" placeholder="e.g. Diva Wardrobe" required />
+          </div>
+
+          <div class="form-row">
+            <label for="phone">Phone Number *</label>
+            <input type="tel" id="phone" name="phone" placeholder="01XXXXXXXXX" required />
+            <span class="field-error" id="phoneError"></span>
+          </div>
+
+          <div class="form-row">
+            <label for="address">Full Address *</label>
+            <textarea id="address" name="address" rows="2" placeholder="House, Road, Area, City" required></textarea>
+          </div>
+
+          <div class="form-row-group">
+            <div class="form-row">
+              <label for="sizeSelect">Size *</label>
+              <select id="sizeSelect" name="size" required></select>
+            </div>
+
+            <div class="form-row">
+              <label>Quantity *</label>
+              <div class="qty-selector">
+                <button type="button" id="qtyMinus" aria-label="Decrease quantity">−</button>
+                <input type="number" id="qtyInput" value="1" min="1" max="20" readonly />
+                <button type="button" id="qtyPlus" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Payment Method *</label>
+            <div class="payment-options">
+              <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="cod" checked />
+                <span>Cash on Delivery</span>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="bkash" />
+                <span>bKash</span>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="nagad" />
+                <span>Nagad</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row" id="mfsDetails" style="display:none;">
+            <div class="mfs-instructions">
+              <p>Send the total amount to <strong id="mfsNumber">01XXX-XXXXXX</strong> (Personal) via <span id="mfsMethodName">bKash</span>, then enter the Transaction ID below.</p>
+            </div>
+            <label for="transactionId">Transaction ID *</label>
+            <input type="text" id="transactionId" name="transactionId" placeholder="e.g. 8N7K2X9P1Q" />
+            <span class="field-error" id="txnError"></span>
+          </div>
+
+          <div class="form-row">
+            <label for="customerNote">Order Note (optional)</label>
+            <textarea id="customerNote" name="customerNote" rows="2" placeholder="Any special instructions..."></textarea>
+          </div>
+
+          <div class="price-summary">
+            <div class="price-row">
+              <span>Product Price</span>
+              <span>৳<span id="sumProductPrice">0</span></span>
+            </div>
+            <div class="price-row">
+              <span>Delivery Charge</span>
+              <span>৳<span id="sumDelivery">70</span></span>
+            </div>
+            <div class="price-row total">
+              <span>Total Payable</span>
+              <span>৳<span id="sumTotal">0</span></span>
+            </div>
+          </div>
+
+          <p class="form-error" id="formError"></p>
+
+          <button type="submit" class="btn btn-primary btn-block" id="placeOrderBtn">Place Order</button>
+        </form>
+      </div>
+
+      <!-- Step 2: Confirmation -->
+      <div class="modal-body confirmation-view" id="orderConfirmView" style="display:none;">
+        <div class="confirm-icon">✓</div>
+        <h2>Order Placed Successfully!</h2>
+        <p class="confirm-sub">Thank you! We've received your order and will contact you soon.</p>
+
+        <div class="order-summary-card">
+          <div class="order-id-row">
+            <span>Order ID</span>
+            <strong id="confOrderId">#ORD-000000</strong>
+          </div>
+          <hr />
+          <div class="summary-line"><span>Customer</span><span id="confName"></span></div>
+          <div class="summary-line"><span>Phone</span><span id="confPhone"></span></div>
+          <div class="summary-line"><span>Product</span><span id="confProduct"></span></div>
+          <div class="summary-line"><span>Size / Qty</span><span id="confSizeQty"></span></div>
+          <div class="summary-line"><span>Payment</span><span id="confPayment"></span></div>
+          <hr />
+          <div class="summary-line total"><span>Total Paid</span><span id="confTotal"></span></div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="closeConfirmBtn">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/store.js"></script>
+</body>
+</html>
