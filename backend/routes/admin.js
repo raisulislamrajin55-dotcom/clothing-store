@@ -92,14 +92,14 @@ router.get("/products", async (req, res) => {
 
 router.post("/products", async (req, res) => {
   try {
-    const { name, price, image, sizes, description, category } = req.body;
-    if (!name || !price || !image || !Array.isArray(sizes) || sizes.length === 0) {
-      return res.status(400).json({ success: false, message: "Name, price, image, and at least one size are required." });
+    const { name, price, images, sizes, description, category } = req.body;
+    if (!name || !price || !Array.isArray(images) || images.length === 0 || !Array.isArray(sizes) || sizes.length === 0) {
+      return res.status(400).json({ success: false, message: "Name, price, at least one image, and at least one size are required." });
     }
     const newProduct = await Product.create({
       name,
       price: Number(price),
-      image,
+      images,
       sizes,
       description: description || "",
       category: category || "General",

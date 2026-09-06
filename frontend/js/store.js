@@ -29,6 +29,12 @@
     }
   }
 
+  function getImages(p) {
+    if (Array.isArray(p.images) && p.images.length > 0) return p.images;
+    if (p.image) return [p.image];
+    return [];
+  }
+
   function renderProducts() {
     if (products.length === 0) {
       productGrid.innerHTML = `<div class="empty-placeholder">No products available yet. Check back soon!</div>`;
@@ -36,12 +42,35 @@
     }
 
     productGrid.innerHTML = products
-      .map(
-        (p) => `
+      .map((p) => {
+        const images = getImages(p);
+        const hasMultiple = images.length > 1;
+
+        return `
       <div class="product-card">
-        <div class="product-image-wrap">
-          <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" />
+        <div class="product-image-wrap" data-index="0">
+          <div class="product-image-track">
+            ${images
+              .map(
+                (img) =>
+                  `<img src="${escapeHtml(img)}" alt="${escapeHtml(p.name)}" loading="lazy" />`
+              )
+              .join("")}
+          </div>
           ${p.inStock === false ? '<span class="badge-outofstock">Out of Stock</span>' : ""}
+          ${
+            hasMultiple
+              ? `
+            <button type="button" class="img-nav img-nav-prev" aria-label="Previous photo">&#10094;</button>
+            <button type="button" class="img-nav img-nav-next" aria-label="Next photo">&#10095;</button>
+            <div class="img-dots">
+              ${images
+                .map((_, i) => `<span class="img-dot${i === 0 ? " active" : ""}" data-index="${i}"></span>`)
+                .join("")}
+            </div>
+          `
+              : ""
+          }
         </div>
         <div class="product-info">
           <span class="product-category">${escapeHtml(p.category || "")}</span>
@@ -58,12 +87,48 @@
           </div>
         </div>
       </div>
-    `
-      )
+    `;
+      })
       .join("");
 
     document.querySelectorAll(".order-btn").forEach((btn) => {
       btn.addEventListener("click", () => openOrderModal(btn.dataset.id));
+    });
+
+    setupImageSliders();
+  }
+
+  function setupImageSliders() {
+    document.querySelectorAll(".product-image-wrap").forEach((wrap) => {
+      const track = wrap.querySelector(".product-image-track");
+      const slides = wrap.querySelectorAll(".product-image-track img");
+      const dots = wrap.querySelectorAll(".img-dot");
+      const prevBtn = wrap.querySelector(".img-nav-prev");
+      const nextBtn = wrap.querySelector(".img-nav-next");
+      const total = slides.length;
+      if (total <= 1) return;
+
+      function goTo(index) {
+        const clamped = ((index % total) + total) % total;
+        wrap.dataset.index = clamped;
+        track.style.transform = `translateX(-${clamped * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle("active", i === clamped));
+      }
+
+      prevBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        goTo(Number(wrap.dataset.index) - 1);
+      });
+      nextBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        goTo(Number(wrap.dataset.index) + 1);
+      });
+      dots.forEach((dot) => {
+        dot.addEventListener("click", (e) => {
+          e.stopPropagation();
+          goTo(Number(dot.dataset.index));
+        });
+      });
     });
   }
 
@@ -80,7 +145,8 @@
 
     clientRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-    document.getElementById("opImage").src = selectedProduct.image;
+    const images = getImages(selectedProduct);
+    document.getElementById("opImage").src = images[0] || "";
     document.getElementById("opImage").alt = selectedProduct.name;
     document.getElementById("opName").textContent = selectedProduct.name;
     document.getElementById("opPrice").textContent = selectedProduct.price;
@@ -227,6 +293,14 @@
 
     orderFormView.style.display = "none";
     orderConfirmView.style.display = "block";
+
+    // Restart the delivery animation every time a confirmation is shown
+    const animEl = document.getElementById("deliveryAnimation");
+    if (animEl) {
+      animEl.classList.remove("play");
+      void animEl.offsetWidth; // force reflow so the animation restarts
+      animEl.classList.add("play");
+    }
 
     // Reset submit lock for next time modal opens with a fresh product
     isSubmitting = false;

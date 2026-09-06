@@ -14,7 +14,6 @@
 
   async function tryAutoLogin() {
     if (!token) return showLogin();
-    // Verify token still works by hitting a protected endpoint
     const res = await fetch(`${API_BASE}/admin/orders`, { headers: authHeaders() });
     if (res.status === 401) {
       sessionStorage.removeItem("adminToken");
@@ -188,7 +187,6 @@
       <div class="detail-line"><span>Delivery Charge</span><span>৳${order.deliveryCharge}</span></div>
       <div class="detail-line"><span>Total Amount</span><span>৳${order.totalAmount}</span></div>
       <div class="detail-line"><span>Payment Method</span><span>${paymentLabel(order.paymentMethod)}</span></div>
-      <div class="detail-line"><span>Transaction ID</span><span>${escapeHtml(order.transactionId) || "—"}</span></div>
       <div class="detail-line"><span>Note</span><span>${escapeHtml(order.customerNote) || "—"}</span></div>
       <div class="detail-line"><span>Status</span><span>${order.status}</span></div>
     `;
@@ -203,6 +201,12 @@
   document.getElementById("statusFilter").addEventListener("change", loadOrders);
 
   // ---------- Products ----------
+  function getImages(p) {
+    if (Array.isArray(p.images) && p.images.length > 0) return p.images;
+    if (p.image) return [p.image];
+    return [];
+  }
+
   async function loadProducts() {
     const grid = document.getElementById("productsAdminGrid");
     grid.innerHTML = `<p class="empty-row">Loading products…</p>`;
@@ -225,14 +229,15 @@
     }
 
     grid.innerHTML = allProducts
-      .map(
-        (p) => `
+      .map((p) => {
+        const images = getImages(p);
+        return `
       <div class="admin-product-card">
-        <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" />
+        <img src="${escapeHtml(images[0] || "")}" alt="${escapeHtml(p.name)}" />
         <div class="admin-product-body">
           ${p.inStock === false ? '<span class="out-of-stock-tag">Out of Stock</span>' : ""}
           <h4>${escapeHtml(p.name)}</h4>
-          <div class="price">৳${p.price} · ${p.sizes.join(", ")}</div>
+          <div class="price">৳${p.price} · ${p.sizes.join(", ")} · ${images.length} photo${images.length !== 1 ? "s" : ""}</div>
           <div class="admin-product-actions">
             <button class="edit-btn" data-id="${p.id}">Edit</button>
             <button class="stock-btn" data-id="${p.id}">${p.inStock === false ? "Mark In Stock" : "Mark Out of Stock"}</button>
@@ -240,8 +245,8 @@
           </div>
         </div>
       </div>
-    `
-      )
+    `;
+      })
       .join("");
 
     grid.querySelectorAll(".edit-btn").forEach((btn) => {
@@ -281,13 +286,14 @@
     document.getElementById("productForm").reset();
     document.getElementById("productFormError").textContent = "";
     const product = id ? allProducts.find((p) => p.id === id) : null;
+    const images = product ? getImages(product) : [];
 
     document.getElementById("productModalTitle").textContent = product ? "Edit Product" : "Add Product";
     document.getElementById("productIdField").value = product ? product.id : "";
     document.getElementById("prodName").value = product ? product.name : "";
     document.getElementById("prodCategory").value = product ? product.category || "" : "";
     document.getElementById("prodPrice").value = product ? product.price : "";
-    document.getElementById("prodImage").value = product ? product.image : "";
+    document.getElementById("prodImage").value = images.join(", ");
     document.getElementById("prodSizes").value = product ? product.sizes.join(", ") : "";
     document.getElementById("prodDescription").value = product ? product.description || "" : "";
     document.getElementById("prodInStock").checked = product ? product.inStock !== false : true;
@@ -307,18 +313,24 @@
       .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
 
+    const images = document
+      .getElementById("prodImage")
+      .value.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     const payload = {
       name: document.getElementById("prodName").value.trim(),
       category: document.getElementById("prodCategory").value.trim(),
       price: Number(document.getElementById("prodPrice").value),
-      image: document.getElementById("prodImage").value.trim(),
+      images,
       sizes,
       description: document.getElementById("prodDescription").value.trim(),
       inStock: document.getElementById("prodInStock").checked,
     };
 
-    if (!payload.name || !payload.price || !payload.image || sizes.length === 0) {
-      errorEl.textContent = "Please fill in all required fields.";
+    if (!payload.name || !payload.price || images.length === 0 || sizes.length === 0) {
+      errorEl.textContent = "Please fill in all required fields (at least one image and one size).";
       return;
     }
 

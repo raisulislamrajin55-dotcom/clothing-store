@@ -4,7 +4,16 @@ const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     price: { type: Number, required: true },
-    image: { type: String, required: true },
+    images: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: function (arr) {
+          return Array.isArray(arr) && arr.length > 0;
+        },
+        message: "At least one image URL is required.",
+      },
+    },
     sizes: { type: [String], required: true },
     description: { type: String, default: "" },
     category: { type: String, default: "General" },

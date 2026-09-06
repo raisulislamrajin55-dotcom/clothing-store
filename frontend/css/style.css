@@ -430,3 +430,113 @@ textarea { resize: vertical; }
   .footer-contact { text-align: left; }
   .modal-body { padding: 24px 18px 20px; }
 }
+
+/* ===== Order confirmation delivery animation ===== */
+.delivery-animation {
+  position: relative;
+  height: 90px;
+  margin: 0 auto 18px;
+  overflow: hidden;
+}
+.delivery-animation .road-line {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, var(--color-line) 0 10px, transparent 10px 20px);
+}
+.delivery-animation .parcel-box {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 26px;
+  opacity: 0;
+}
+.delivery-animation .delivery-truck {
+  position: absolute;
+  left: -60px;
+  bottom: 14px;
+  font-size: 38px;
+}
+.delivery-animation.play .parcel-box {
+  animation: parcelDrop 0.6s ease-in 0.9s forwards;
+}
+.delivery-animation.play .delivery-truck {
+  animation: truckDrive 2.6s ease-in-out forwards;
+}
+@keyframes parcelDrop {
+  0% { top: 0; opacity: 1; }
+  70% { top: 32px; opacity: 1; }
+  100% { top: 32px; opacity: 0; }
+}
+@keyframes truckDrive {
+  0% { left: -60px; transform: translateX(0); }
+  30% { left: 50%; transform: translateX(-50%); }
+  62% { left: 50%; transform: translateX(-50%); }
+  100% { left: 115%; transform: translateX(-50%); }
+}
+
+/* ===== Product image slider ===== */
+.product-image-wrap {
+  position: relative;
+}
+.product-image-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.35s ease;
+}
+.product-image-track img {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.img-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(28, 26, 23, 0.55);
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.product-image-wrap:hover .img-nav {
+  opacity: 1;
+}
+.img-nav-prev { left: 8px; }
+.img-nav-next { right: 8px; }
+.img-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  z-index: 2;
+}
+.img-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.img-dot.active {
+  background: #fff;
+  transform: scale(1.3);
+}
