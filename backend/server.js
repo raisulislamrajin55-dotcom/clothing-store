@@ -1,79 +1,37 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const path = require("path");
-const rateLimit = require("express-rate-limit");
-
-const { connectDb } = require("./services/db");
-const productsRouter = require("./routes/products");
-const ordersRouter = require("./routes/orders");
-const adminRouter = require("./routes/admin");
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve Static Frontend Files
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// API Routes
+app.use('/api/products', require('./routes/products'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/orders', require('./routes/orders'));
+
+// Fallback for Frontend Pages
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/admin.html'));
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
 const PORT = process.env.PORT || 5000;
-
-// --- Security & parsing ---
-app.use(
-  helmet({
-    contentSecurityPolicy: false, // keep simple for beginner deployment; tighten later if needed
-  })
-);
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "*",
-  })
-);
-app.use(express.json({ limit: "1mb" }));
-
-// Basic rate limiting on order creation to reduce spam / abuse
-const orderLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 20, // 20 order attempts per IP per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: "Too many requests. Please try again in a few minutes." },
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
-// --- API routes ---
-app.use("/api/products", productsRouter);
-app.use("/api/orders", orderLimiter, ordersRouter);
-app.use("/api/admin", adminRouter);
-
-app.get("/api/health", (req, res) => {
-  res.json({ success: true, message: "Server is running." });
-});
-
-// --- Serve the frontend (store + admin dashboard) ---
-const frontendPath = path.join(__dirname, "..", "frontend");
-app.use(express.static(frontendPath));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
-
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(frontendPath, "admin.html"));
-});
-
-// --- 404 handler for unknown API routes ---
-app.use("/api", (req, res) => {
-  res.status(404).json({ success: false, message: "Not found." });
-});
-
-// --- Global error handler ---
-app.use((err, req, res, next) => {
-  console.error("[server] Unhandled error:", err);
-  res.status(500).json({ success: false, message: "Internal server error." });
-});
-
-connectDb()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`✅ Clothing store server running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ Failed to connect to the database. Server not started.", err);
-    process.exit(1);
-  });
