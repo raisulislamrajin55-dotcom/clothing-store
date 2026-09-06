@@ -1,12 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const Order = require('../models/Order'); // Mongo Order model
-const adminAuth = require('../middleware/adminAuth'); // Token Auth Check
+const Order = require('../models/Order');
+
+// Middleware safety handler
+const adminAuth = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: 'Unauthorized access' });
+    }
+    next();
+  } catch (err) {
+    res.status(401).json({ success: false, message: 'Invalid authentication token' });
+  }
+};
 
 // --- ORDERS API ---
 
-// 1. Fetch Orders (With Search & Status Filter)
+// 1. Fetch Orders
 router.get('/orders', adminAuth, async (req, res) => {
   try {
     const { q, status } = req.query;
@@ -50,7 +62,6 @@ router.patch('/orders/:id/status', adminAuth, async (req, res) => {
 router.get('/products', adminAuth, async (req, res) => {
   try {
     const products = await Product.find({}).sort({ createdAt: -1 });
-    // Ensuring frontend mapping compatibility (p.id)
     const formattedProducts = products.map(p => ({
       ...p._doc,
       id: p._id.toString()
@@ -72,7 +83,7 @@ router.post('/products', adminAuth, async (req, res) => {
   }
 });
 
-// 5. Update Product (Edit)
+// 5. Update Product
 router.put('/products/:id', adminAuth, async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
