@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
-const db = require("../services/fileDb");
+const Product = require("../models/Product");
+const Order = require("../models/Order");
 const sheets = require("../services/googleSheets");
 const telegram = require("../services/telegram");
 const { validateOrderPayload } = require("../middleware/validate");
 
-// In-memory idempotency cache: clientRequestId -> orderId, expires after 10 minutes.
-// Prevents duplicate orders from double-clicks or resubmits, without needing a database.
 const recentSubmissions = new Map();
 const IDEMPOTENCY_TTL_MS = 10 * 60 * 1000;
 
@@ -21,7 +20,6 @@ function cleanupOldSubmissions() {
 }
 
 function generateOrderId() {
-  // Short, human-friendly order ID, e.g. ORD-7F3K9A
   const suffix = uuidv4().split("-")[0].toUpperCase();
   return `ORD-${suffix}`;
 }
@@ -38,32 +36,31 @@ function formatDhakaTime(date) {
   }).format(date);
 }
 
-// POST /api/orders — create a new order
 router.post("/", async (req, res) => {
   try {
     cleanupOldSubmissions();
 
     const { clientRequestId } = req.body;
 
-    // --- Duplicate submission guard ---
     if (clientRequestId) {
       const existing = recentSubmissions.get(clientRequestId);
       if (existing) {
-        return res.status(200).json({
-          success: true,
-          duplicate: true,
-          order: existing.order,
-        });
+        return res.status(200).json({ success: true, duplicate: true, order: existing.order });
       }
     }
 
-    // --- Validation ---
     const errors = validateOrderPayload(req.body);
     if (errors.length > 0) {
-      return res.status(400).json({ success: false, message: errors.join(" ") , errors });
+      return res.status(400).json({ success: false, message: errors.join(" "), errors });
     }
 
-    const product = await db.getProductById(req.body.productId);
+    let product;
+    try {
+      product = await Product.findById(req.body.productId);
+    } catch (e) {
+      product = null;
+    }
+
     if (!product) {
       return res.status(400).json({ success: false, message: "Selected product could not be found." });
     }
@@ -90,27 +87,24 @@ router.post("/", async (req, res) => {
       phone: req.body.phone.trim(),
       address: req.body.address.trim(),
       productName: product.name,
-      productId: product.id,
+      productId: product._id.toString(),
       quantity,
       size: req.body.size,
       productPrice,
       deliveryCharge,
       totalAmount,
       paymentMethod: req.body.paymentMethod,
-      transactionId: req.body.transactionId ? req.body.transactionId.trim() : "",
+      transactionId: "",
       customerNote: req.body.customerNote ? req.body.customerNote.trim() : "",
       status: "Pending",
     };
 
-    // --- Persist to the database first (source of truth for the admin dashboard) ---
-    db.addOrder(order);
+    const createdOrder = await Order.create(order);
 
-    // --- Cache for idempotency ---
     if (clientRequestId) {
       recentSubmissions.set(clientRequestId, { order, timestamp: Date.now() });
     }
 
-    // --- Fire off Google Sheets + Telegram, but don't fail the order if these fail ---
     const results = await Promise.allSettled([
       sheets.appendOrder(order),
       telegram.sendOrderNotification(order),

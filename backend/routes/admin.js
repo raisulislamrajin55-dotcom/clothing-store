@@ -1,148 +1,147 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const crypto = require('crypto');
-const Product = require('../models/Product');
-const Order = require('../models/Order');
+const Product = require("../models/Product");
+const Order = require("../models/Order");
+const sheets = require("../services/googleSheets");
 
-// Secret token key
-const ADMIN_SECRET_TOKEN = process.env.JWT_SECRET || 'secret_admin_token_123';
+const ADMIN_SECRET_TOKEN = process.env.JWT_SECRET || "secret_admin_token_123";
 
-// Simple Authorization Middleware
 const adminAuth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ success: false, message: 'Unauthorized access' });
+      return res.status(401).json({ success: false, message: "Unauthorized access" });
     }
-    const token = authHeader.split(' ')[1];
-    if (token === ADMIN_SECRET_TOKEN || token.length > 5) {
+    const token = authHeader.split(" ")[1];
+    if (token === ADMIN_SECRET_TOKEN) {
       return next();
     }
-    res.status(401).json({ success: false, message: 'Invalid token' });
+    res.status(401).json({ success: false, message: "Invalid token" });
   } catch (err) {
-    res.status(401).json({ success: false, message: 'Authentication error' });
+    res.status(401).json({ success: false, message: "Authentication error" });
   }
 };
 
-// --- AUTH ROUTE ---
+function formatProduct(p) {
+  const obj = p.toObject ? p.toObject() : p;
+  return { ...obj, id: obj._id.toString() };
+}
 
-// Admin Login
-router.post('/login', async (req, res) => {
+// --- AUTH ---
+router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    
-    const adminUser = process.env.ADMIN_USERNAME || 'admin';
-    const adminPass = process.env.ADMIN_PASSWORD || '123456';
+    const adminUser = process.env.ADMIN_USERNAME;
+    const adminPass = process.env.ADMIN_PASSWORD;
 
     if (username === adminUser && password === adminPass) {
-      // Returns deterministic token back to frontend
       return res.json({ success: true, token: ADMIN_SECRET_TOKEN });
     }
-
-    res.status(400).json({ success: false, message: 'Invalid username or password' });
+    res.status(401).json({ success: false, message: "Invalid username or password" });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error during login' });
+    res.status(500).json({ success: false, message: "Server error during login" });
   }
 });
 
-// --- ORDERS API ---
+router.use(adminAuth);
 
-// 1. Get All Orders
-router.get('/orders', adminAuth, async (req, res) => {
+// --- ORDERS ---
+router.get("/orders", async (req, res) => {
   try {
     const { q, status } = req.query;
     let filter = {};
-
-    if (status) filter.status = status;
+    if (status && status !== "All") filter.status = status;
     if (q) {
       filter.$or = [
-        { orderId: { $regex: q, $options: 'i' } },
-        { customerName: { $regex: q, $options: 'i' } },
-        { phone: { $regex: q, $options: 'i' } }
+        { orderId: { $regex: q, $options: "i" } },
+        { customerName: { $regex: q, $options: "i" } },
+        { phone: { $regex: q, $options: "i" } },
       ];
     }
-
     const orders = await Order.find(filter).sort({ createdAt: -1 });
     res.json({ success: true, orders });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+    res.status(500).json({ success: false, message: "Failed to fetch orders" });
   }
 });
 
-// 2. Update Order Status
-router.patch('/orders/:id/status', adminAuth, async (req, res) => {
+router.patch("/orders/:orderId/status", async (req, res) => {
   try {
     const { status } = req.body;
     const order = await Order.findOneAndUpdate(
-      { $or: [{ _id: req.params.id }, { orderId: req.params.id }] },
+      { orderId: req.params.orderId },
       { status },
       { new: true }
     );
-    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
     res.json({ success: true, order });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to update order status' });
+    res.status(500).json({ success: false, message: "Failed to update order status" });
   }
 });
 
-// --- PRODUCTS API ---
-
-// 3. Get Products
-router.get('/products', adminAuth, async (req, res) => {
+// --- PRODUCTS ---
+router.get("/products", async (req, res) => {
   try {
-    const products = await Product.find({}).sort({ createdAt: -1 });
-    const formattedProducts = products.map(p => ({
-      ...p._doc,
-      id: p._id.toString()
-    }));
-    res.json({ success: true, products: formattedProducts });
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json({ success: true, products: products.map(formatProduct) });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to fetch products' });
+    res.status(500).json({ success: false, message: "Failed to fetch products" });
   }
 });
 
-// 4. Add Product
-router.post('/products', adminAuth, async (req, res) => {
+router.post("/products", async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
-    await newProduct.save();
-    res.status(201).json({ success: true, product: { ...newProduct._doc, id: newProduct._id.toString() } });
+    const { name, price, image, sizes, description, category } = req.body;
+    if (!name || !price || !image || !Array.isArray(sizes) || sizes.length === 0) {
+      return res.status(400).json({ success: false, message: "Name, price, image, and at least one size are required." });
+    }
+    const newProduct = await Product.create({
+      name,
+      price: Number(price),
+      image,
+      sizes,
+      description: description || "",
+      category: category || "General",
+      inStock: true,
+    });
+    res.status(201).json({ success: true, product: formatProduct(newProduct) });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to create product' });
+    res.status(500).json({ success: false, message: "Failed to create product" });
   }
 });
 
-// 5. Update Product
-router.put('/products/:id', adminAuth, async (req, res) => {
+router.put("/products/:id", async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedProduct) return res.status(404).json({ success: false, message: 'Product not found' });
-    res.json({ success: true, product: { ...updatedProduct._doc, id: updatedProduct._id.toString() } });
+    const updates = { ...req.body };
+    delete updates.id;
+    if (updates.price !== undefined) updates.price = Number(updates.price);
+    const updated = await Product.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (!updated) return res.status(404).json({ success: false, message: "Product not found" });
+    res.json({ success: true, product: formatProduct(updated) });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to update product' });
+    res.status(500).json({ success: false, message: "Failed to update product" });
   }
 });
 
-// 6. Stock Toggle
-router.patch('/products/:id/stock', adminAuth, async (req, res) => {
+router.patch("/products/:id/stock", async (req, res) => {
   try {
     const { inStock } = req.body;
-    const product = await Product.findByIdAndUpdate(req.params.id, { inStock }, { new: true });
-    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
-    res.json({ success: true, product });
+    const updated = await Product.findByIdAndUpdate(req.params.id, { inStock: Boolean(inStock) }, { new: true });
+    if (!updated) return res.status(404).json({ success: false, message: "Product not found" });
+    res.json({ success: true, product: formatProduct(updated) });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to update stock' });
+    res.status(500).json({ success: false, message: "Failed to update stock" });
   }
 });
 
-// 7. Delete Product
-router.delete('/products/:id', adminAuth, async (req, res) => {
+router.delete("/products/:id", async (req, res) => {
   try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-    if (!deletedProduct) return res.status(404).json({ success: false, message: 'Product not found' });
-    res.json({ success: true, message: 'Product permanently deleted' });
+    const deleted = await Product.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: "Product not found" });
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to delete product' });
+    res.status(500).json({ success: false, message: "Failed to delete product" });
   }
 });
 
