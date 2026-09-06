@@ -63,7 +63,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ success: false, message: errors.join(" ") , errors });
     }
 
-    const product = db.getProductById(req.body.productId);
+    const product = await db.getProductById(req.body.productId);
     if (!product) {
       return res.status(400).json({ success: false, message: "Selected product could not be found." });
     }
@@ -102,7 +102,7 @@ router.post("/", async (req, res) => {
       status: "Pending",
     };
 
-    // --- Persist locally first (source of truth for the admin dashboard) ---
+    // --- Persist to the database first (source of truth for the admin dashboard) ---
     db.addOrder(order);
 
     // --- Cache for idempotency ---

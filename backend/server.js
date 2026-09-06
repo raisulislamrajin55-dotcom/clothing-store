@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
 
+const { connectDb } = require("./services/db");
 const productsRouter = require("./routes/products");
 const ordersRouter = require("./routes/orders");
 const adminRouter = require("./routes/admin");
@@ -66,6 +67,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: "Internal server error." });
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Clothing store server running on http://localhost:${PORT}`);
-});
+connectDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Clothing store server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Failed to connect to the database. Server not started.", err);
+    process.exit(1);
+  });
