@@ -432,50 +432,59 @@ textarea { resize: vertical; }
 }
 
 
+
 /* ===== Order confirmation delivery animation ===== */
 .delivery-animation {
   position: relative;
   height: 120px;
-  margin: 0 auto 18px;
+  margin: 0 auto 20px;
   overflow: hidden;
 }
-.delivery-animation .road-line {
+.delivery-animation .road {
   position: absolute;
-  bottom: 22px;
+  bottom: 12px;
   left: 0;
   right: 0;
-  height: 2px;
-  background-image: repeating-linear-gradient(90deg, var(--color-line) 0 10px, transparent 10px 20px);
+  height: 3px;
+  background-image: repeating-linear-gradient(90deg, var(--color-line) 0 14px, transparent 14px 26px);
 }
 .delivery-animation .parcel-box {
   position: absolute;
   left: 50%;
   top: 0;
-  transform: translateX(-50%);
-  font-size: 34px;
+  transform: translateX(15px);
+  font-size: 32px;
   opacity: 0;
 }
 .delivery-animation .delivery-truck {
   position: absolute;
-  left: -70px;
-  bottom: 16px;
-  font-size: 58px;
-  transform: scaleX(-1);
+  left: -130px;
+  bottom: 10px;
+  width: 110px;
+  height: 55px;
 }
 .delivery-animation.play .parcel-box {
-  animation: parcelDrop 0.9s ease-in 1.6s forwards;
+  animation: parcelDrop 0.8s ease-in 1.7s forwards;
 }
 .delivery-animation.play .delivery-truck {
-  animation: truckDrive 5s ease-in-out forwards;
+  animation: truckDrive 5.5s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+.delivery-animation.play .wheel-spin {
+  transform-origin: center;
+  animation: wheelSpin 0.4s linear infinite;
 }
 @keyframes parcelDrop {
   0% { top: 0; opacity: 1; }
-  70% { top: 44px; opacity: 1; }
-  100% { top: 44px; opacity: 0; }
+  75% { top: 40px; opacity: 1; }
+  100% { top: 40px; opacity: 0; }
 }
 @keyframes truckDrive {
-  0% { left: -70px; }
-  32% { left: calc(50% - 29px); }
-  66% { left: calc(50% - 29px); }
+  0% { left: -130px; }
+  35% { left: calc(50% - 55px); }
+  65% { left: calc(50% - 55px); }
   100% { left: 115%; }
+}
+@keyframes wheelSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
