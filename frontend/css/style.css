@@ -433,58 +433,142 @@ textarea { resize: vertical; }
 
 
 
+
 /* ===== Order confirmation delivery animation ===== */
-.delivery-animation {
+.delivery-pill {
   position: relative;
-  height: 120px;
+  height: 64px;
+  width: 240px;
+  max-width: 90%;
   margin: 0 auto 20px;
+  background: var(--color-ink);
+  border-radius: 999px;
   overflow: hidden;
 }
-.delivery-animation .road {
+.pill-scene {
   position: absolute;
-  bottom: 12px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background-image: repeating-linear-gradient(90deg, var(--color-line) 0 14px, transparent 14px 26px);
-}
-.delivery-animation .parcel-box {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(15px);
-  font-size: 32px;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
 }
-.delivery-animation .delivery-truck {
+
+/* Scene 1: box loading into the van */
+.delivery-pill.play .scene-load {
+  animation: sceneFade1 1s steps(1) forwards;
+}
+@keyframes sceneFade1 {
+  0% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.mini-box {
   position: absolute;
-  left: -130px;
-  bottom: 10px;
-  width: 110px;
-  height: 55px;
+  top: -6px;
+  left: calc(50% - 30px);
+  width: 14px;
+  height: 14px;
+  background: var(--color-accent);
+  border-radius: 3px;
+  opacity: 0;
 }
-.delivery-animation.play .parcel-box {
-  animation: parcelDrop 0.8s ease-in 1.7s forwards;
+.delivery-pill.play .mini-box {
+  animation: boxFall 0.85s ease-in forwards;
 }
-.delivery-animation.play .delivery-truck {
-  animation: truckDrive 5.5s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+@keyframes boxFall {
+  0% { top: -6px; opacity: 1; }
+  75% { top: 18px; opacity: 1; }
+  100% { top: 18px; opacity: 0; }
 }
-.delivery-animation.play .wheel-spin {
-  transform-origin: center;
-  animation: wheelSpin 0.4s linear infinite;
+.mini-van {
+  position: relative;
+  width: 44px;
+  height: 24px;
 }
-@keyframes parcelDrop {
-  0% { top: 0; opacity: 1; }
-  75% { top: 40px; opacity: 1; }
-  100% { top: 40px; opacity: 0; }
+.van-body {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 28px;
+  height: 16px;
+  background: #fbf4e8;
+  border-radius: 3px;
 }
-@keyframes truckDrive {
-  0% { left: -130px; }
-  35% { left: calc(50% - 55px); }
-  65% { left: calc(50% - 55px); }
-  100% { left: 115%; }
+.van-cab {
+  position: absolute;
+  left: 26px;
+  top: 8px;
+  width: 13px;
+  height: 12px;
+  background: var(--color-accent);
+  border-radius: 2px 6px 6px 2px;
 }
-@keyframes wheelSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+
+/* Scene 2: van driving away */
+.delivery-pill.play .scene-drive {
+  animation: sceneFade2 1.3s steps(1) forwards;
+  animation-delay: 1s;
+}
+@keyframes sceneFade2 {
+  0% { opacity: 0; }
+  1% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.delivery-pill.play .mini-van.driving {
+  animation: vanDrive 1.3s ease-in forwards;
+  animation-delay: 1s;
+}
+@keyframes vanDrive {
+  0% { transform: translateX(-90px); }
+  100% { transform: translateX(160px); }
+}
+.headlight {
+  position: absolute;
+  right: -16px;
+  top: 8px;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 14px solid rgba(251, 244, 232, 0.5);
+}
+.road-dashes {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.35) 0 8px, transparent 8px 16px);
+  background-size: 32px 2px;
+}
+.delivery-pill.play .road-dashes {
+  animation: dashMove 1.3s linear forwards;
+  animation-delay: 1s;
+}
+@keyframes dashMove {
+  from { background-position: 0 0; }
+  to { background-position: -200px 0; }
+}
+
+/* Scene 3: order placed */
+.delivery-pill.play .scene-done {
+  animation: sceneFade3 0.4s ease forwards;
+  animation-delay: 2.3s;
+}
+@keyframes sceneFade3 {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.done-text {
+  color: #fbf4e8;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-right: 8px;
+}
+.done-check {
+  color: #6fcf97;
+  font-weight: 700;
+  font-size: 1.1rem;
 }
